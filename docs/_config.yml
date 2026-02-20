@@ -1,0 +1,12 @@
+title: "FHIR Blog"
+description: "FHIR documentation published with GitHub Pages"
+theme: minima
+baseurl: "/FHIR_Blog"
+url: "https://kasra321.github.io"
+markdown: kramdown
+kramdown:
+  input: GFM
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
