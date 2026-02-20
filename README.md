@@ -35,6 +35,10 @@ Markdown documentation published to GitHub Pages using Jekyll.
 
 The page will be live at `https://kasra321.github.io/FHIR_Blog/<filename>/` after GitHub Pages rebuilds (usually under a minute).
 
+## Auto-generated Index
+
+Each time `publish.sh` runs, it scans `docs/` for `.md` files (excluding `index.md`) and regenerates `docs/index.md` with an alphabetically sorted list of links. If a page has a `title:` in its YAML front matter, that title is used; otherwise a display name is derived from the filename.
+
 ## publish.sh Options
 
 | Flag | Description |

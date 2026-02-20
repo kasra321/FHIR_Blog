@@ -160,6 +160,52 @@ GI
   fi
 }
 
+update_index() {
+  local pages=()
+  local file title name link
+
+  while IFS= read -r -d '' file; do
+    # Extract title from YAML front matter
+    title=""
+    if head -1 "$file" | grep -q '^---$'; then
+      title=$(awk '/^---$/{n++; next} n==1 && /^title:/{sub(/^title:[[:space:]]*/, ""); gsub(/^["'\''"]|["'\''"]$/, ""); print; exit}' "$file")
+    fi
+
+    # Fallback: derive display name from filename
+    if [[ -z "$title" ]]; then
+      name=$(basename "$file" .md)
+      # Replace - and _ with spaces, then title-case
+      title=$(echo "$name" | sed 's/[-_]/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)}1')
+    fi
+
+    link=$(basename "$file" .md)
+    pages+=("- [$title]($link)")
+  done < <(find "$DOCS_DIR" -maxdepth 1 -name '*.md' ! -name 'index.md' -print0 | sort -z)
+
+  if ((${#pages[@]} == 0)); then
+    info "No content pages found — skipping index update."
+    return
+  fi
+
+  # Sort entries alphabetically
+  IFS=$'\n' sorted=($(printf '%s\n' "${pages[@]}" | sort)); unset IFS
+
+  cat > "$DOCS_DIR/index.md" <<MD
+---
+layout: home
+title: Home
+---
+
+Welcome to the FHIR Blog.
+
+## Pages
+
+$(printf '%s\n' "${sorted[@]}")
+MD
+
+  ok "Updated index.md with ${#sorted[@]} page link(s)."
+}
+
 publish() {
   git add -A
 
@@ -214,6 +260,7 @@ echo ""
 
 ensure_git_repo
 ensure_jekyll_scaffold
+update_index
 
 if $INIT_ONLY; then
   echo ""
